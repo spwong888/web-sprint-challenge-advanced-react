@@ -48,6 +48,6 @@ test('renders error message when submitting invalid email', async () => {
 
   await waitFor(() => {
     const error = screen.queryAllByText(/failure/i);
-    expect(error).toBeInTheDocument();
+    expect(error.length).toBeGreaterThan(0); 
   });
 });
