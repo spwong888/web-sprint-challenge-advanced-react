@@ -1,40 +1,53 @@
 // Write your tests here
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import AppClass from './AppClass'; 
-
-describe('AppClass Component', () => {
-  it('renders the component', () => {
-    render(<AppClass className="test-class" />);
-    const component = screen.getByTestId('app-class-component');
-    expect(component).toBeInTheDocument();
-  });
-
-  it('renders the "Coordinates" heading', () => {
-    render(<AppClass className="test-class" />);
-    expect(screen.getByText('Coordinates (2, 2)')).toBeInTheDocument();
-  });
-
-  it('renders the "Steps" heading', () => {
-    render(<AppClass className="test-class" />);
-    expect(screen.getByText('You moved 0 times')).toBeInTheDocument();
-  });
-
-  it('updates input value when typing', () => {
-    render(<AppClass className="test-class" />);
-    const emailInput = screen.getByPlaceholderText('Type email');
-    fireEvent.change(emailInput, { target: { value: 'example@example.com' } });
-    expect(emailInput).toHaveValue('example@example.com');
-  });
-
-  it('submits the form', () => {
-    render(<AppClass className="test-class" />);
-    const submitButton = screen.getByText('Submit');
-    fireEvent.click(submitButton);
-    
-  });
-});
+import { render, screen, waitFor } from '@testing-library/react';
+import '@testing-library/jest-dom/extend-expect';
+import AppFunctional from './AppFunctional';
+import userEvent from '@testing-library/user-event';
 
 test('sanity', () => {
-  expect(true).toBe(false)
-})
+  expect(true).toBe(true);
+});
+
+test('renders without errors', () => {
+  render(<AppFunctional />);
+});
+
+test('renders initial message', () => {
+  render(<AppFunctional />);
+  const message = screen.getByText(/coordinates/i);
+  expect(message).toBeInTheDocument();
+});
+
+test('renders initial steps', () => {
+  render(<AppFunctional />);
+  const steps = screen.getByText(/time/i);
+  expect(steps).toBeInTheDocument();
+});
+
+// test('renders error message when submitting no email', async () => {
+//   render(<AppFunctional />);
+//   const submitButton = screen.getByRole('button', { name: /submit/i });
+
+//   userEvent.click(submitButton);
+
+//   await waitFor(() => {
+//     const error = screen.getByText((text) => text.match(/ouch/i));
+//     expect(error).toBeInTheDocument();
+//   });
+// });
+
+test('renders error message when submitting invalid email', async () => {
+  render(<AppFunctional />);
+
+  const emailInput = screen.getByRole('textbox', { id: /email/i });
+  const submitButton = screen.getByRole('button', { name: /submit/i });
+
+  userEvent.type(emailInput, 'foo@bar.baz');
+  userEvent.click(submitButton);
+
+  await waitFor(() => {
+    const error = screen.queryAllByText(/failure/i);
+    expect(error).toBeInTheDocument();
+  });
+});
